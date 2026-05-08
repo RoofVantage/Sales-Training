@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roofing Sales Script</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --card: #1e2333;
+    --border: #2a3048;
+    --accent: #e8a020;
+    --accent2: #4a9eff;
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --success: #3ecf8e;
+    --danger: #f05c5c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0d1020 0%, #1a2040 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .header-left p {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-bar-outer {
+    width: 200px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 73px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+    position: sticky;
+    top: 73px;
+    height: calc(100vh - 73px);
+  }
+  .sidebar-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 20px 12px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .nav-item:hover { background: var(--card); color: var(--text); }
+  .nav-item.active {
+    background: var(--card);
+    border-left-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .nav-item.done { color: var(--success); }
+  .nav-item.done .nav-dot { background: var(--success); }
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .nav-item.active .nav-dot { background: var(--accent); }
+  .nav-num {
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 18px;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 40px 48px;
+    max-width: 860px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(232,160,32,0.12);
+    border: 1px solid rgba(232,160,32,0.3);
+    border-radius: 99px;
+    padding: 4px 14px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* OBJECTIVE CARD */
+  .objective {
+    background: rgba(74,158,255,0.08);
+    border: 1px solid rgba(74,158,255,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .objective-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .objective-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 4px;
+  }
+  .objective-text { font-size: 14px; color: var(--text); }
+
+  /* LINES */
+  .lines { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+
+  .line-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .line-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .line-card:hover { border-color: rgba(232,160,32,0.3); }
+  .line-card:hover::before { background: var(--accent); }
+  .line-card.revealed { background: #1a2035; }
+  .line-card.revealed::before { background: var(--accent); }
+
+  .line-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tag-say { color: var(--accent); }
+  .tag-think { color: var(--accent2); }
+  .tag-ask { color: var(--success); }
+  .tag-close { color: var(--danger); }
+  .tag-objection { color: #c084fc; }
+
+  .line-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .line-text.hidden {
+    filter: blur(5px);
+    user-select: none;
+    transition: filter 0.3s;
+  }
+  .line-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* KEY POINTS */
+  .key-points {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .key-points-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .key-point {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .key-point:last-child { border-bottom: none; }
+  .key-point-bullet {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* PRICE TABLE */
+  .price-table {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .price-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-row.header {
+    background: rgba(232,160,32,0.08);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .price-val { color: var(--accent); font-weight: 600; }
+  .price-reason { color: var(--muted); font-size: 12px; }
+
+  /* OBJECTION CARDS */
+  .objection-block {
+    background: rgba(240,92,92,0.06);
+    border: 1px solid rgba(240,92,92,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .objection-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--danger);
+    margin-bottom: 8px;
+  }
+  .objection-text {
+    font-size: 15px;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(240,92,92,0.15);
+  }
+  .response-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--success);
+    margin-bottom: 8px;
+  }
+  .response-text { font-size: 14px; color: var(--text); }
+
+  /* QUIZ */
+  .quiz-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .quiz-q {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .quiz-option:hover { border-color: var(--accent); background: rgba(232,160,32,0.05); }
+  .quiz-option.correct { border-color: var(--success); background: rgba(62,207,142,0.08); color: var(--success); }
+  .quiz-option.wrong { border-color: var(--danger); background: rgba(240,92,92,0.08); color: var(--danger); }
+  .quiz-feedback {
+    margin-top: 12px;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.good { background: rgba(62,207,142,0.08); color: var(--success); border: 1px solid rgba(62,207,142,0.2); }
+  .quiz-feedback.bad { background: rgba(240,92,92,0.08); color: var(--danger); border: 1px solid rgba(240,92,92,0.2); }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0f1117;
+  }
+  .btn-primary:hover { background: #f5b030; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--muted); }
+  .btn-reveal {
+    background: rgba(232,160,32,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(232,160,32,0.3);
+    font-size: 12px;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+  }
+  .btn-reveal:hover { background: rgba(232,160,32,0.2); }
+
+  /* FLASH CARDS */
+  .flashcard-wrap {
+    perspective: 1000px;
+    margin-bottom: 24px;
+  }
+  .flashcard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .flashcard:hover { border-color: rgba(232,160,32,0.3); }
+  .flashcard-face { font-size: 16px; color: var(--text); }
+  .flashcard-back {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--accent);
+    font-style: italic;
+  }
+  .flashcard.flipped .flashcard-back { display: block; }
+  .flip-hint {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* CHIPS */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .chip.accent { border-color: rgba(232,160,32,0.4); color: var(--accent); background: rgba(232,160,32,0.06); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  /* COMPLETE BANNER */
+  .complete-banner {
+    background: rgba(62,207,142,0.08);
+    border: 1px solid rgba(62,207,142,0.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .complete-icon { font-size: 28px; }
+  .complete-text h3 { color: var(--success); font-size: 16px; margin-bottom: 4px; }
+  .complete-text p { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Roofing Sales Script</h1>
+    <p>Raleigh &amp; Wilmington, NC — Training Guide</p>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 19</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Sections</div>
+    <div id="navItems"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainContent"></div>
+
+</div>
+
+<script>
+const sections = [
+  {
+    id: 1,
+    title: "Introduction & Framing",
+    badge: "Opening",
+    subtitle: "Set the tone immediately. Make them feel like a partner, not a customer.",
+    objective: { icon: "🤝", text: "Build instant trust and frame the visit as a collaborative walkthrough, not a sales pitch." },
+    lines: [
+      { tag: "say", text: "Thanks again for having me out today." },
+      { tag: "say", text: "What I'm going to do is walk you through exactly how we do things, start to finish." },
+      { tag: "say", text: "By the time we're done, there won't be a single thing happening on your roof that you don't already know about." },
+      { tag: "say", text: "This is a team thing — me and you are going to go through this together so there are no surprises." },
+    ],
+    keyPoints: [
+      "Use 'team' language — 'me and you,' 'together,' 'no surprises'",
+      "You're a guide, not a salesperson at this stage",
+      "Sets expectation of full transparency before price ever comes up",
+    ],
+    quiz: [
+      { q: "What is the main goal of your opening lines?", options: ["Get to the price quickly", "Build trust and frame it as a team effort", "Talk about your competitors", "Ask about their budget"], correct: 1, feedback: "Correct! The opening is about building rapport and framing the visit as collaborative — not selling yet." }
+    ]
+  },
+  {
+    id: 2,
+    title: "Industry Failure Rates",
+    badge: "Credibility",
+    subtitle: "Plant the seed of risk early. They need to understand who they're really buying from.",
+    objective: { icon: "📊", text: "Establish urgency around contractor selection. Make them think beyond price to longevity." },
+    lines: [
+      { tag: "say", text: "Let me start with the industry, because who you hire matters as much as the price." },
+      { tag: "say", text: "In the home improvement world, if 100 contractors start today, within one year, about 50 of them will be out of business." },
+      { tag: "say", text: "Within five years, around 96% of them are gone." },
+      { tag: "say", text: "Roofing is usually even worse than that." },
+      { tag: "say", text: "So when you're choosing a contractor, you're not just buying today's price — you're buying who's still going to be around if there's an issue later." },
+    ],
+    keyPoints: [
+      "50% gone in 1 year, 96% gone in 5 years — memorize these numbers",
+      "Roofing failure rates are even higher than general contractors",
+      "Reframe the purchase: it's not about price, it's about who's still around later",
+    ],
+    quiz: [
+      { q: "What percentage of contractors are gone within 5 years?", options: ["50%", "75%", "96%", "80%"], correct: 2, feedback: "96%! And roofing is even worse. This stat makes price seem less important than longevity." }
+    ]
+  },
+  {
+    id: 3,
+    title: "Types of Companies",
+    badge: "Positioning",
+    subtitle: "Define the landscape. Let them see where everyone else falls short before you introduce yourself.",
+    objective: { icon: "🎯", text: "Position your company favorably against the 3 archetypes without bashing competitors directly." },
+    lines: [
+      { tag: "say", text: "Now, let me show you the kinds of companies you could be working with.", tag2: "Investor-Owned" },
+      { tag: "say", text: "First, you have the big investor-owned companies — CEO, CFO, layers of management. They have to keep prices high just to cover all those margins. On a roof like yours, $20–30K, sometimes $50K." },
+      { tag: "say", text: "Next, the family-owned companies. I like family businesses — the challenge is they stretch thin on resources and schedule flexibility. Insurance deadlines? They can struggle to fit you in. We keep specific slots open for exactly that situation.", tag2: "Family-Owned" },
+      { tag: "say", text: "And then you've got what I call the 'Chuck in a Truck' guys. Cheapest materials, cheapest price — but that's where corners get cut. That's when people call us back to fix leaks or redo the job.", tag2: "Chuck in a Truck" },
+      { tag: "say", text: "My job today is to show you how we're different from all of that, and then let you decide what makes the most sense for your home." },
+    ],
+    keyPoints: [
+      "3 buckets: Investor-owned (expensive), Family (unreliable), Chuck in a Truck (cut corners)",
+      "Don't bash — just describe the weaknesses factually",
+      "End with 'let YOU decide' — keeps pressure off",
+      "Mention schedule slots for insurance deadlines — this is a differentiator",
+    ],
+    quiz: [
+      { q: "How do you end the competitor section?", options: ["Tell them we're the best", "Let them decide what makes sense for their home", "Show them our price is lower", "Mention we've been in business 15 years"], correct: 1, feedback: "Always hand the decision back to them. 'Let you decide' removes pressure and builds trust." }
+    ]
+  },
+  {
+    id: 4,
+    title: "Who We Are",
+    badge: "Credentials",
+    subtitle: "Establish authority quickly. Licensed, insured, documented — say it simply.",
+    objective: { icon: "🏆", text: "Build credibility with credentials without boring them. Offer the paperwork proactively." },
+    lines: [
+      { tag: "say", text: "We're a licensed general contractor." },
+      { tag: "say", text: "We're actually a little overqualified for the roofing world — we could build a skyscraper in your backyard if we wanted to." },
+      { tag: "say", text: "We're also fully insured. If you'd like to see our license or insurance paperwork, I can send that right over — a lot of people like to have that for their records." },
+      { tag: "say", text: "We run a very professional, documented process. We want you to feel like you know exactly what's happening the whole time." },
+    ],
+    keyPoints: [
+      "Licensed general contractor = overqualified for roofing (use the skyscraper line — it's memorable)",
+      "Always offer the paperwork proactively — most won't ask but it builds trust",
+      "'Documented process' sets up the project manager story in the next section",
+    ]
+  },
+  {
+    id: 5,
+    title: "Project Manager & Documentation",
+    badge: "Process",
+    subtitle: "This is a major differentiator. Most companies don't have a dedicated PM on site.",
+    objective: { icon: "📸", text: "Paint a picture of a professional, photo-documented job that protects the homeowner long-term." },
+    lines: [
+      { tag: "say", text: "One big difference with us is that you get a dedicated project manager on site." },
+      { tag: "say", text: "He's there before the crew shows up. He makes sure all the materials are correct." },
+      { tag: "say", text: "He takes pictures before, during, and after the job. So everything we go over today is exactly what gets put on your roof and you'll see it all in those photos." },
+      { tag: "say", text: "When we're done, you get a written report with those images." },
+      { tag: "say", text: "That way, if insurance ever comes out here years from now and says, 'I don't think this was installed properly,' you can say, 'Actually, yes it was — here are the pictures to prove it.'" },
+    ],
+    keyPoints: [
+      "PM arrives BEFORE crew — sets expectations, checks materials",
+      "Before, during, and after photos — this is the proof layer",
+      "The insurance scenario is powerful — it makes documentation feel protective, not bureaucratic",
+      "Written report with images = tangible deliverable they can keep",
+    ]
+  },
+  {
+    id: 6,
+    title: "Mission & Relationship",
+    badge: "Connection",
+    subtitle: "Short section. Humanize the transaction. You're not just a contractor.",
+    objective: { icon: "🤙", text: "Build personal connection. Make them feel like you'll be accessible after the sale." },
+    lines: [
+      { tag: "say", text: "Our mission is to make this a smooth, professional process for you." },
+      { tag: "say", text: "We keep a good streamline of communication the whole way." },
+      { tag: "say", text: "This is teamwork — we're working towards the same goal: getting this roof done right, one time, so you don't have to worry about it." },
+      { tag: "say", text: "I'll give you my direct number — me and you are basically friends after this." },
+    ],
+    keyPoints: [
+      "'Done right, one time' — this phrase sticks",
+      "Give your direct number — shows accountability",
+      "'Basically friends' — lowers their guard without being cheesy",
+    ]
+  },
+  {
+    id: 7,
+    title: "Shingle Manufacturers",
+    badge: "Products",
+    subtitle: "Don't bash competitors' materials. Just show why CertainTeed Landmark wins on weight and durability.",
+    objective: { icon: "🏠", text: "Get a 'yes' on the weight = durability logic. This yes carries into the warranty section." },
+    lines: [
+      { tag: "say", text: "The top shingle manufacturers in our world are GAF and CertainTeed. They all make good shingles — their warranties are very similar. I don't bash any of them." },
+      { tag: "say", text: "Where we're different is we use CertainTeed Landmark shingles. They're a little bit heavier than some of the others — you can even see it when you compare them side by side." },
+      { tag: "ask", text: "Would you agree that having that extra weight usually means a little more durability on your roof?" },
+      { tag: "think", text: "Wait for the 'Yes.' Most people agree. This micro-commitment builds toward the close." },
+      { tag: "say", text: "Most people do. So there's no downside in terms of warranty or shingle quality — we just give you that extra durability because of the added weight." },
+    ],
+    keyPoints: [
+      "Don't bash GAF or others — say they're all good, then differentiate",
+      "The weight = durability question is a YES close — get the nod",
+      "CertainTeed Landmark: heavier, visible difference side by side",
+    ],
+    quiz: [
+      { q: "Why do you ask 'Would you agree that extra weight means more durability?'", options: ["To fill silence", "It's a micro-commitment — getting them to agree builds momentum toward yes", "To show off product knowledge", "To test if they're paying attention"], correct: 1, feedback: "Exactly. Every small 'yes' builds agreement momentum. By the time you hit price, they've already said yes many times." }
+    ]
+  },
+  {
+    id: 8,
+    title: "Warranty Explanation",
+    badge: "Value",
+    subtitle: "The transferable warranty is a selling point most homeowners haven't thought about.",
+    objective: { icon: "📋", text: "Close on the warranty. Get another 'yes.' Plant the resale value idea." },
+    lines: [
+      { tag: "say", text: "As a company, we back our work with a workmanship warranty." },
+      { tag: "say", text: "Then on top of that, you get a 50-year warranty from CertainTeed on the roofing system." },
+      { tag: "say", text: "Another important piece: that warranty is one-time transferable. So if you live here 20–25 years and then sell, you can pass that warranty to the next owner for the rest of the term." },
+      { tag: "say", text: "For people who might sell at some point, that's a big selling point that can help your home stand out." },
+      { tag: "ask", text: "Do you like how that warranty works — especially that it can transfer if you sell?" },
+      { tag: "think", text: "Get the 'Great.' before you move on. Another yes banked." },
+    ],
+    keyPoints: [
+      "Two layers: workmanship warranty (us) + 50-year CertainTeed product warranty",
+      "Transferable = resale value — most homeowners never think about this",
+      "Ask for the yes on the warranty before moving to installation",
+    ]
+  },
+  {
+    id: 9,
+    title: "Installation Day: Protection & Tear-Off",
+    badge: "Installation",
+    subtitle: "Walk them through the morning. Show professionalism before the first nail is driven.",
+    objective: { icon: "🔨", text: "Show that protecting their property is the first priority, before any work begins." },
+    lines: [
+      { tag: "say", text: "Our crew shows up around 6:45–7:00 in the morning." },
+      { tag: "say", text: "First thing we do is protect your property — tarp around the house, cover your flower beds, put plywood over your HVAC unit so we're not dropping shingles or nails on it." },
+      { tag: "say", text: "That makes the cleanup process much easier and keeps your property safe." },
+      { tag: "say", text: "Once everything is protected, we tear off the old roof down to the decking. That lets us see what's really going on under there." },
+    ],
+    keyPoints: [
+      "Specific arrival time (6:45–7am) shows professionalism",
+      "HVAC plywood cover — very specific detail that impresses homeowners",
+      "Tear-off down to the decking — shows thoroughness",
+    ]
+  },
+  {
+    id: 10,
+    title: "Decking & Rot Replacement",
+    badge: "Installation",
+    subtitle: "Handle the 'what if there's a surprise cost' objection before it happens.",
+    objective: { icon: "🪵", text: "Preemptively eliminate the fear of hidden costs. Show that you ask permission before spending their money." },
+    lines: [
+      { tag: "say", text: "If we see any rotted decking, we take care of it the right way. In our pricing, we include up to two sheets of decking." },
+      { tag: "say", text: "If we find more than that: we take pictures of the bad areas, knock on your door, show you exactly what we're seeing — and only move forward if you approve it." },
+      { tag: "say", text: "Additional decking is $100 per sheet. That covers material, labor to remove and replace it, and haul-away and disposal." },
+      { tag: "say", text: "Sometimes people say, 'I can buy plywood for cheaper than that.' And that's true at the store. But once you factor in tearing it out, cutting it, putting it back, and hauling away the waste — that's where that number comes from." },
+      { tag: "ask", text: "Does that make sense so far?" },
+    ],
+    keyPoints: [
+      "2 sheets included in pricing — this is a value statement",
+      "Pictures → knock on door → your approval → then proceed. Say this sequence every time.",
+      "$100/sheet — justify it proactively before they object (plywood store comparison)",
+    ]
+  },
+  {
+    id: 11,
+    title: "Flashing Inspection",
+    badge: "Installation",
+    subtitle: "Quick section. Show attention to detail. Justify the cost before they ask.",
+    objective: { icon: "🔩", text: "Show that flashing is reviewed, not assumed — and that you communicate before charging." },
+    lines: [
+      { tag: "say", text: "After the decking, we inspect all of your flashing. If it's in good shape and we can reuse it, we will." },
+      { tag: "say", text: "But most of the time, when you're investing in a new roof, it makes sense to make sure everything — including the flashing — is updated and sealed correctly." },
+      { tag: "say", text: "If we need to replace flashing, we'll take pictures, show you why, and talk through it before we move forward." },
+      { tag: "say", text: "That extra cost is usually around $4 per linear foot — nothing crazy, but it makes sure the system is tight." },
+    ],
+    keyPoints: [
+      "$4/linear foot — mention it casually, 'nothing crazy'",
+      "Same photo-and-approval process as decking — consistency builds trust",
+      "Reuse if possible — shows you're not just upselling everything",
+    ]
+  },
+  {
+    id: 12,
+    title: "Waterproofing Underlayment",
+    badge: "Materials",
+    subtitle: "This is a product demo moment. Have a sample. Let them feel it.",
+    objective: { icon: "💧", text: "Use the physical sample to create a sensory moment — touch creates memory and trust." },
+    lines: [
+      { tag: "say", text: "Once the deck and flashing are good, we start putting down your waterproofing underlayment in your most leak-prone areas: valleys, roof-to-wall connections, around your pipe boots and vent stacks." },
+      { tag: "say", text: "Go ahead and feel this product — you can see how sticky it is. It gets installed directly on the wood deck in those areas." },
+      { tag: "say", text: "When it heats up, it adheres to the deck. If a nail goes through it later, it actually self-seals around the nail." },
+      { tag: "say", text: "That's why we say there is basically no way for water to get through in those spots when this is installed correctly." },
+      { tag: "think", text: "Mention that when you get called out for leaks, valleys and pipe boots are always the first places you check — this builds authority." },
+    ],
+    keyPoints: [
+      "Let them feel the sample — tactile = memorable",
+      "Self-sealing around nails is a wow moment — say it slowly",
+      "3 vulnerable areas: valleys, pipe boots, roof-to-wall. Memorize these.",
+    ]
+  },
+  {
+    id: 13,
+    title: "Synthetic Underlayment",
+    badge: "Materials",
+    subtitle: "Quick. It's the second moisture barrier. Cover it and move on.",
+    objective: { icon: "🛡️", text: "Show full deck coverage. This layer ties the whole waterproofing story together." },
+    lines: [
+      { tag: "say", text: "Then we cover the rest of the roof with a synthetic underlayment." },
+      { tag: "say", text: "This acts as your second moisture barrier under the shingles." },
+      { tag: "say", text: "It's tear-resistant, lays nicely, and covers everything from edge to edge." },
+    ],
+    keyPoints: [
+      "Second layer = second line of defense",
+      "Covers everything the ice & water shield doesn't",
+      "Keep this brief — the ice & water section is the star",
+    ]
+  },
+  {
+    id: 14,
+    title: "Drip Edge",
+    badge: "Materials",
+    subtitle: "Not required by code everywhere — doing it anyway is a differentiator.",
+    objective: { icon: "🌧️", text: "Position drip edge as a sign of doing more than the minimum. Protects fascia and gutters." },
+    lines: [
+      { tag: "say", text: "Next, we install aluminum drip edge on all your eaves and rakes — basically the bottom and sloped sides of your roof." },
+      { tag: "say", text: "It kicks water away from your fascia so it doesn't rot, and helps direct water cleanly into your gutters." },
+      { tag: "say", text: "It also helps prevent water from seeping back up under the shingles." },
+      { tag: "say", text: "This isn't required by North Carolina code everywhere, but we do it on every job. That's one of the ways we differentiate from companies that just do the minimum code work." },
+    ],
+    keyPoints: [
+      "Not required by NC code in all areas — but we do it anyway",
+      "3 functions: protects fascia, directs to gutters, prevents back-seep",
+      "Use this to contrast against 'Chuck in a Truck' guys",
+    ]
+  },
+  {
+    id: 15,
+    title: "Starter Shingles & Wind Protection",
+    badge: "Materials",
+    subtitle: "130 mph wind rating is a Category 3-4 hurricane. That lands in NC.",
+    objective: { icon: "💨", text: "Make wind protection tangible. 130 mph means something in Raleigh and Wilmington." },
+    lines: [
+      { tag: "say", text: "Then we put on a starter shingle around the edges. This is part of what allows us to offer up to 130 mph wind protection on the system." },
+      { tag: "say", text: "That's around a Category 3 to 4 hurricane level." },
+      { tag: "say", text: "One side of this starter works similarly to that self-adhering underlayment. When it heats up, it bonds to the first course of shingles — keeps wind from getting under the edge and trying to peel shingles up." },
+    ],
+    keyPoints: [
+      "130 mph = Category 3–4 hurricane — always say this in NC",
+      "Starter bonds to first shingle course = wind can't get under the edge",
+      "Connects back to the underlayment story (sticky, adhering)",
+    ]
+  },
+  {
+    id: 16,
+    title: "Shingle Technology",
+    badge: "Materials",
+    subtitle: "Two things to cover: algae resistance and the 6-nail standard.",
+    objective: { icon: "🔬", text: "Show that the shingle itself is engineered — and that your installation exceeds code." },
+    lines: [
+      { tag: "say", text: "On the shingle itself, two big things I like to point out." },
+      { tag: "say", text: "First, streak and algae resistance. You've probably seen roofs with black streaks around 10–15 years old. CertainTeed uses copper-infused granules to fight that growth. That's why they back it with a 15-year streak warranty." },
+      { tag: "say", text: "Second, the nailing strip. See this wide strip? I call it the nailing strip for dummies — you'd have to try to miss it. By code, we could put in 4 nails and get around 115 mph wind coverage. As a company, we always put 6 nails per shingle." },
+      { tag: "say", text: "That's what gets you to the 130 mph wind rating." },
+      { tag: "say", text: "I'll let you feel the shingle so you can see the weight and quality for yourself." },
+      { tag: "ask", text: "Do you have any questions about the products or how we install them?" },
+    ],
+    keyPoints: [
+      "Copper-infused granules = 15-year streak warranty",
+      "4 nails = code minimum (115 mph). We use 6 = 130 mph. We always exceed code.",
+      "'Nailing strip for dummies' — this line is memorable and gets laughs",
+      "Let them feel the shingle — weight = quality = trust",
+    ]
+  },
+  {
+    id: 17,
+    title: "People, Process & Cleanup",
+    badge: "Wrap-Up",
+    subtitle: "Tie it all together. Remind them who's involved and how it ends.",
+    objective: { icon: "✅", text: "Paint the finish line clearly. The final walkthrough = their sign-off = confidence." },
+    lines: [
+      { tag: "say", text: "I'm your design consultant — my job is to make sure we cover every box so you know exactly what we're doing and what we're using." },
+      { tag: "say", text: "You'll have that dedicated project manager on site from start to finish — making sure everything matches what we promised you." },
+      { tag: "say", text: "At the end of the job, we focus heavily on cleanup. We run magnetic rollers through the entire yard. We use handheld magnets in the tighter areas." },
+      { tag: "say", text: "The goal is to leave your property better than we found it — no nails, no trash left behind." },
+      { tag: "say", text: "Then the project manager does a final walk-through with you. You look everything over together, ask any questions, and once you're happy, we finalize everything and you enjoy your new roof." },
+    ],
+    keyPoints: [
+      "Magnetic rollers + handheld magnets = nail cleanup is thorough and specific",
+      "'Leave it better than we found it' — memorable close-out line",
+      "Final walkthrough with PM = accountability, your sign-off matters",
+    ]
+  },
+  {
+    id: 18,
+    title: "Check for Yeses",
+    badge: "Pre-Close",
+    subtitle: "Do not go to price until you have three yeses. This protects you.",
+    objective: { icon: "☑️", text: "Lock in agreement on company, product, and warranty before price ever appears." },
+    lines: [
+      { tag: "ask", text: "Do you like our company and the way we do business?" },
+      { tag: "think", text: "Wait for yes." },
+      { tag: "ask", text: "Do you feel good about the products we're using and how we install them?" },
+      { tag: "think", text: "Wait for yes." },
+      { tag: "ask", text: "And are you comfortable with the warranty and the way we stand behind our work?" },
+      { tag: "think", text: "Wait for yes. Then say:" },
+      { tag: "say", text: "Okay, great. So the only thing left is to see if we can make the numbers work for you." },
+    ],
+    keyPoints: [
+      "3 questions, 3 yeses. Don't skip any.",
+      "If you get a 'not really' here, address it before going to price",
+      "The final line reframes price as the only remaining obstacle — not the whole decision",
+    ],
+    quiz: [
+      { q: "What do the 3 pre-close questions lock in?", options: ["Budget", "Agreement on company, product, and warranty", "Timeline", "Referrals"], correct: 1, feedback: "Exactly. You need yes on all three before price. If they don't like the product or company, price won't fix it." }
+    ]
+  },
+  {
+    id: 19,
+    title: "Pricing & Objection Handling",
+    badge: "Close",
+    subtitle: "The pricing sequence, objection responses, and the CertainTeed bucks close.",
+    objective: { icon: "💰", text: "Present price in structured drops. Every drop has a justified reason. Never cut without explaining why." },
+    lines: [
+      { tag: "say", text: "So you're probably wondering — after all this, what's the price? What's the damage?", tag2: "Setup" },
+      { tag: "say", text: "We give you a one-year price on the roof. But given where you're at, you're looking to move forward a lot sooner than one year, right?", tag2: "1-Year Price" },
+      { tag: "say", text: "So we give a 30-day price as well. This is what that 30-day price looks like. [Show price. Shut up. Let them talk first.]", tag2: "30-Day Price" },
+      { tag: "objection", text: "Homeowner: 'This is just not something we can do right now. We're gonna have to think about this.'" },
+      { tag: "think", text: "Don't jump in. Let them finish. Uncover the real objection — other bids, spouse not there, budget, etc." },
+      { tag: "say", text: "Okay, I completely understand. If there was a way I could save you some money, wouldn't you at least like to hear about it?", tag2: "Same-Day Setup" },
+      { tag: "say", text: "So what we do is run a same-day promotional. The reason: I run 2–3 appointments a day across Raleigh, Fayetteville, Wilmington, Jacksonville. It costs me time and money to come back out here. So we reward customers who move forward today." },
+      { tag: "say", text: "Your same-day price is 10-seven. That saves you $2,300 off the 30-day price. [Pause. Let it land.]", tag2: "Same-Day Price" },
+      { tag: "objection", text: "Homeowner: 'That's still too high.'" },
+      { tag: "say", text: "If it were free today, would you move forward?", tag2: "Test the Objection" },
+      { tag: "say", text: "So what you're telling me is: you like the company, you like the product, you like the warranty — it all just comes down to price, right? So what's the holdup?" },
+      { tag: "say", text: "Look — you bought those shoes you're wearing. Why didn't you just go to Skechers and buy the cheapest pair? You buy on value. A roof is the same thing.", tag2: "Value Talk" },
+      { tag: "say", text: "We work closely with CertainTeed, and sometimes they have rebates from other jobs. I was driving around your neighborhood — the roofs all look the same age. This might be a good job for CertainTeed to invest in for their project gallery. Let me call my manager and see if there are any 'CertainTeed bucks' available.", tag2: "CertainTeed Bucks" },
+      { tag: "say", text: "[After callback] CertainTeed has $2,000 they can throw at this job. First-come, first-serve — we're not the only CertainTeed reps in NC. I can apply that full $2,000 to your job right now." },
+      { tag: "say", text: "That brings your price down to only 8-seven. We've saved you $4,300 total. That is a great deal. I'd honestly hate for you to miss out on this.", tag2: "True Bottom" },
+      { tag: "close", text: "So — do you want to do cash or check for the deposit? We do half down, half on completion." },
+    ],
+    keyPoints: [
+      "1-Year → 30-Day → Same-Day → CertainTeed Bucks. Every drop has a reason.",
+      "Never cut price without a story. Unjustified drops look sketchy.",
+      "Same-day logic: saves YOU time/money on return trips — the customer earns the discount",
+      "CertainTeed bucks: third-party money, limited supply, first-come/first-serve",
+      "'8-seven' not 'eight thousand seven hundred' — say numbers softly",
+      "Assumption close: 'Cash or check?' not 'Do you want to move forward?'",
+    ],
+    priceTable: [
+      { label: "1-Year Price", reason: "Standard — can't hold material costs forever", drop: "Full price" },
+      { label: "30-Day Price", reason: "Better commitment, shorter hold", drop: "Slight reduction" },
+      { label: "Same-Day Price", reason: "Saves rep time & cost on return trips", drop: "−$2,300" },
+      { label: "CertainTeed Bucks", reason: "Third-party rebate, limited, first-come/first-serve", drop: "−$2,000 more" },
+    ],
+    objections: [
+      { o: "'We need to think about it.'", r: "Don't jump in. Let them talk. Ask: 'If there was a way I could save you money, wouldn't you want to hear about it?'" },
+      { o: "'That's still too high.'", r: "Ask: 'If it were free today, would you move forward?' Lock in that the issue is ONLY price, then go to CertainTeed bucks." },
+      { o: "'I can get plywood cheaper.'", r: "Agree — but add tearing out, cutting, replacing, hauling = that's where the $100/sheet comes from." },
+    ],
+    quiz: [
+      { q: "What's wrong with just dropping the price by $2,000 with no explanation?", options: ["Nothing, customers love discounts", "It looks like you made up the original price and cuts are suspicious", "You should drop even more", "The manager won't allow it"], correct: 1, feedback: "Correct. Every drop needs a story: same-day saves you trip costs, CertainTeed bucks are limited rebate money. Unjustified drops erode trust." }
+    ]
+  }
+];
+
+const tagLabels = {
+  say: "SAY",
+  think: "INTERNAL",
+  ask: "ASK",
+  close: "CLOSE",
+  objection: "OBJECTION"
+};
+
+const tagColors = {
+  say: "tag-say",
+  think: "tag-think",
+  ask: "tag-ask",
+  close: "tag-close",
+  objection: "tag-objection"
+};
+
+let completed = new Set();
+let currentSection = 0;
+
+function buildNav() {
+  const nav = document.getElementById('navItems');
+  sections.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'nav-item' + (i === 0 ? ' active' : '');
+    el.id = 'nav-' + i;
+    el.innerHTML = `<span class="nav-num">${String(s.id).padStart(2,'0')}</span><span class="nav-dot"></span><span>${s.title}</span>`;
+    el.onclick = () => goTo(i);
+    nav.appendChild(el);
+  });
+}
+
+function buildSections() {
+  const main = document.getElementById('mainContent');
+  sections.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'section' + (i === 0 ? ' active' : '');
+    div.id = 'section-' + i;
+
+    let html = `
+      <div class="section-badge">${s.badge}</div>
+      <div class="section-title">${s.title}</div>
+      <div class="section-subtitle">${s.subtitle}</div>
+    `;
+
+    if (s.objective) {
+      html += `<div class="objective">
+        <div class="objective-icon">${s.objective.icon}</div>
+        <div>
+          <div class="objective-label">Objective</div>
+          <div class="objective-text">${s.objective.text}</div>
+        </div>
+      </div>`;
+    }
+
+    // Lines
+    if (s.lines && s.lines.length) {
+      html += `<button class="btn btn-reveal" onclick="revealAll(${i})">👁 Reveal All Lines</button>`;
+      html += `<div class="lines">`;
+      s.lines.forEach((line, li) => {
+        const tc = tagColors[line.tag] || 'tag-say';
+        const tl = tagLabels[line.tag] || 'SAY';
+        html += `<div class="line-card" id="line-${i}-${li}" onclick="revealLine(${i},${li})">
+          <div class="line-tag ${tc}">${tl}${line.tag2 ? ' — ' + line.tag2 : ''}</div>
+          <div class="line-text hidden" id="lt-${i}-${li}">${line.text}</div>
+          <div class="line-hint">Tap to reveal</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Key points
+    if (s.keyPoints) {
+      html += `<div class="key-points">
+        <div class="key-points-title">Key Points to Remember</div>`;
+      s.keyPoints.forEach(kp => {
+        html += `<div class="key-point"><span class="key-point-bullet">→</span><span>${kp}</span></div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Price table
+    if (s.priceTable) {
+      html += `<div class="price-table">
+        <div class="price-row header"><span>Price Level</span><span>Why It Exists</span><span>Drop</span></div>`;
+      s.priceTable.forEach(row => {
+        html += `<div class="price-row">
+          <span class="price-val">${row.label}</span>
+          <span class="price-reason">${row.reason}</span>
+          <span>${row.drop}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Objections
+    if (s.objections) {
+      html += `<div class="divider"></div>`;
+      s.objections.forEach(obj => {
+        html += `<div class="objection-block">
+          <div class="objection-label">Objection</div>
+          <div class="objection-text">${obj.o}</div>
+          <div class="response-label">Your Response</div>
+          <div class="response-text">${obj.r}</div>
+        </div>`;
+      });
+    }
+
+    // Quiz
+    if (s.quiz) {
+      html += `<div class="divider"></div>`;
+      s.quiz.forEach((q, qi) => {
+        html += `<div class="quiz-block">
+          <div class="quiz-q">🧠 ${q.q}</div>
+          <div class="quiz-options">`;
+        q.options.forEach((opt, oi) => {
+          html += `<div class="quiz-option" id="qo-${i}-${qi}-${oi}" onclick="answerQuiz(${i},${qi},${oi},${q.correct},'${q.feedback.replace(/'/g,"\\'")}')">
+            ${String.fromCharCode(65+oi)}. ${opt}
+          </div>`;
+        });
+        html += `</div>
+          <div class="quiz-feedback" id="qf-${i}-${qi}"></div>
+        </div>`;
+      });
+    }
+
+    // Nav buttons
+    html += `<div class="btn-row">`;
+    if (i > 0) html += `<button class="btn btn-secondary" onclick="goTo(${i-1})">← Previous</button>`;
+    html += `<button class="btn btn-primary" onclick="completeAndNext(${i})">${i < sections.length-1 ? 'Mark Done & Continue →' : '🎉 Complete Training'}</button>`;
+    html += `</div>`;
+
+    div.innerHTML = html;
+    main.appendChild(div);
+  });
+}
+
+function revealLine(si, li) {
+  const lt = document.getElementById(`lt-${si}-${li}`);
+  const card = document.getElementById(`line-${si}-${li}`);
+  if (lt) { lt.classList.remove('hidden'); card.classList.add('revealed'); }
+  const hint = card.querySelector('.line-hint');
+  if (hint) hint.style.display = 'none';
+}
+
+function revealAll(si) {
+  const section = sections[si];
+  section.lines.forEach((_, li) => revealLine(si, li));
+}
+
+function answerQuiz(si, qi, selected, correct, feedback) {
+  const options = document.querySelectorAll(`[id^="qo-${si}-${qi}-"]`);
+  options.forEach((opt, oi) => {
+    opt.style.pointerEvents = 'none';
+    if (oi === correct) opt.classList.add('correct');
+    else if (oi === selected && oi !== correct) opt.classList.add('wrong');
+  });
+  const fb = document.getElementById(`qf-${si}-${qi}`);
+  fb.textContent = feedback;
+  fb.className = 'quiz-feedback show ' + (selected === correct ? 'good' : 'bad');
+}
+
+function goTo(i) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + i).classList.add('active');
+  document.getElementById('nav-' + i).classList.add('active');
+  currentSection = i;
+  document.querySelector('.main').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+function completeAndNext(i) {
+  completed.add(i);
+  const navItem = document.getElementById('nav-' + i);
+  navItem.classList.add('done');
+  updateProgress();
+  if (i < sections.length - 1) {
+    goTo(i + 1);
+  } else {
+    showComplete();
+  }
+}
+
+function showComplete() {
+  const main = document.getElementById('mainContent');
+  const banner = document.createElement('div');
+  banner.className = 'complete-banner';
+  banner.innerHTML = `
+    <div class="complete-icon">🏆</div>
+    <div class="complete-text">
+      <h3>Training Complete!</h3>
+      <p>You've reviewed all 19 sections of the roofing sales script. Keep practicing until every line feels natural.</p>
+    </div>`;
+  const lastSection = document.getElementById('section-' + (sections.length-1));
+  lastSection.prepend(banner);
+}
+
+function updateProgress() {
+  const pct = Math.round((completed.size / sections.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = completed.size + ' / ' + sections.length;
+}
+
+buildNav();
+buildSections();
+</script>
+</body>
+</html>
