@@ -713,7 +713,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     <button class="tab-btn" onclick="switchTab('simulate',this)">🎯 Practice</button>
   </div>
   <div class="hdr-right">
-    <div style="display:flex;align-items:center;gap:8px;"><div class="progress-pill" id="gProgress">0 / 19 complete</div><div class="progress-pill" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#fff;">v2.1.1</div></div>
+    <div class="progress-pill" id="gProgress">0 / 19 complete</div>
     <button onclick="openSettings()" title="Settings" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);width:34px;height:34px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">⚙️</button>
   </div>
 </div>
@@ -799,11 +799,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
               <textarea class="chat-ta" id="simInput" placeholder="Respond to the customer…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSim();}"></textarea>
               <button class="btn-mic" id="simMic" onclick="toggleMic('sim')" title="Voice input">🎤</button>
               <button class="btn-send" id="simSend" onclick="sendSim()">➤</button>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-              <button class="btn-ghost" onclick="resetConversation()" style="padding:8px 12px;font-size:12px;">🔄 Reset Conversation</button>
-              <button class="btn-ghost" onclick="redoLastResponse()" style="padding:8px 12px;font-size:12px;">↩️ Redo Last Response</button>
-              <button class="btn-ghost" id="playbackBtn" onclick="playLastRecording()" style="padding:8px 12px;font-size:12px;">🎧 Replay My Voice</button>
             </div>
           </div>
         </div>
@@ -921,7 +916,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       <div style="display:flex;gap:6px;">
         <button class="btn-ghost" onclick="downloadSession('txt')" title="Download as text file" style="padding:10px 12px;font-size:12px;">📄 TXT</button>
         <button class="btn-ghost" onclick="downloadSession('html')" title="Download as HTML" style="padding:10px 12px;font-size:12px;">🌐 HTML</button>
-        <button class="btn-ghost" onclick="downloadSession('json')" title="Download training data" style="padding:10px 12px;font-size:12px;">💾 JSON</button>
       </div>
       <button class="btn-gold" onclick="resetSim()">New Session</button>
     </div>
@@ -931,18 +925,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 <div class="toast" id="toast"></div>
 
 <script>
-
-async function safeSpeak(text,type='cust'){
-  try{
-    if(typeof speakText === 'function'){
-      return await speakText(text,type);
-    }
-  }catch(err){
-    console.log('Speech error:',err);
-  }
-}
-
-
 // ══════════════════════════════════════
 // DATA
 // ══════════════════════════════════════
@@ -1039,7 +1021,7 @@ const STAGES = ["Introduction","Industry Stats","Company Types","Credentials","P
 let learnIdx=0, learnDone=new Set();
 let cfg={scenario:'single',diff:'realistic',voice:'text',obj:'all'};
 let sim={running:false,msgs:[],exch:0,t0:null,timer:null,stages:new Set(),grades:[],won:false};
-let ttsEnabled={cust:true,rep:true};
+let ttsEnabled={cust:false,rep:false};
 let isSpeaking=false;
 let OPENAI_KEY='';
 let ELEVENLABS_KEY='';
@@ -1184,7 +1166,7 @@ function updateStageBar(){
   const lbl=document.getElementById('stageCurrentName');
   if(lbl)lbl.textContent=curName;
 }
-async async function startSim(){
+async function startSim(){
   const btn=document.getElementById('startBtn');
   btn.disabled=true;btn.textContent='Starting…';
   document.getElementById('simSetup').style.display='none';
@@ -1205,97 +1187,37 @@ async async function startSim(){
   if(!open){btn.disabled=false;btn.textContent='Start Simulation →';return;}
   sim.msgs.push({role:'assistant',content:open});
   addSimMsg('customer',open);
-
-  if(cfg.voice==='full'){
-    ttsEnabled.cust=true;
-    ttsEnabled.rep=true;
-
-    const custBtn=document.getElementById('simCustTtsBtn');
-    const repBtn=document.getElementById('simRepTtsBtn');
-
-    custBtn.classList.add('tts-on');
-    repBtn.classList.add('tts-on');
-
-    custBtn.textContent='🔊 Customer';
-    repBtn.textContent='🔊 You';
-
-    if(!mic.on){
-      toggleMic('sim');
-    }
-  }
-
-  await safeSpeak(open,'cust');
+  speakText(open,'cust');
   btn.disabled=false;btn.textContent='Start Simulation →';
 }
-async 
 async function sendSim(){
   const inp=document.getElementById('simInput');
-  const txt=inp.value.trim();
-  if(!txt||!sim.running)return;
-
-  lastUserResponse=txt;
-
+  const txt=inp.value.trim();if(!txt||!sim.running)return;
   inp.value='';
-  sim.exch++;
-  document.getElementById('simExch').textContent=sim.exch;
-
+  sim.exch++;document.getElementById('simExch').textContent=sim.exch;
   sim.msgs.push({role:'user',content:txt});
   addSimMsg('rep',txt);
-
-  try{
-    if(cfg.voice==='full' || cfg.voice==='mic'){
-      await recordAndPlaybackUserVoice(txt);
-    }else{
-      await safeSpeak(txt,'rep');
-    }
-  }catch(e){console.log(e);}
-
-  const sb=document.getElementById('simSend');
-  sb.disabled=true;
-
+  speakText(txt,'rep');
+  const sb=document.getElementById('simSend');sb.disabled=true;
   showTyping('sim');
-
   const sys=buildCustomerSys(cfg.scenario,cfg.diff,'sim');
   const csys=buildCoachSys();
-
   const [custR,scoreR]=await Promise.all([
     claude(sim.msgs,sys),
-    claude([{role:'user',content:`Roofing sales rep said:
-"${txt}"
-
-Score and coach. JSON only:
-{"grade":"B","score":78,"stage":"Shingles","tip":"1-2 sentence tip.","customer_bought":false}`}],csys)
+    claude([{role:'user',content:`Roofing sales rep said:\n"${txt}"\n\nScore and coach. JSON only:\n{"grade":"B","score":78,"stage":"Shingles","tip":"1-2 sentence tip.","customer_bought":false}`}],csys)
   ]);
-
-  await new Promise(r=>setTimeout(r,1500));
-
   removeTyping('sim');
-
-  if(!custR){
-    sb.disabled=false;
-    return;
-  }
-
+  if(!custR){sb.disabled=false;return;}
   sim.msgs.push({role:'assistant',content:custR});
   addSimMsg('customer',custR);
   showExchangeScore('sim',scoreR);
   addCoachItem(scoreR);
   updateStageTracking(scoreR);
   updateAvgGrade();
-
-  await safeSpeak(custR,'cust');
-
-  try{
-    const d=JSON.parse((scoreR||'').replace(/```json|```/g,'').trim());
-    if(d.customer_bought){
-      sim.won=true;
-      setTimeout(()=>endSim(true),1500);
-    }
-  }catch(e){}
-
+  speakText(custR,'cust');
+  try{const d=JSON.parse((scoreR||'').replace(/```json|```/g,'').trim());if(d.customer_bought){sim.won=true;setTimeout(()=>endSim(true),1500);}}catch(e){}
   sb.disabled=false;
 }
-
 function addSimMsg(who,txt){
   const c=document.getElementById('simMsgs');
   const d=document.createElement('div');
@@ -1589,22 +1511,6 @@ function testVoice(){
   } else if(OPENAI_KEY){
     ttsEnabled.cust=true;speakText(sample,'cust');
     toast('🔊 Playing via OpenAI TTS…');
-  } else if(format==='json'){
-    const payload={
-      version:'2.1.0',
-      exported_at:new Date().toISOString(),
-      messages:msgs,
-      coaching:coach,
-      score,
-      grade,
-      summary
-    };
-
-    triggerDownload(
-      new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),
-      `RoofVantage-Session-${date.replace(/ /g,'-')}.json`
-    );
-
   } else {
     speakBrowser(sample,'cust');
     toast('🔊 Browser TTS — add ElevenLabs key in Settings for natural voice');
@@ -1692,50 +1598,6 @@ function initSettingsPage(){
 // ══════════════════════════════════════
 // DOWNLOAD SESSION
 // ══════════════════════════════════════
-
-async function recordAndPlaybackUserVoice(txt){
-  try{
-    await safeSpeak(txt,'rep');
-  }catch(e){
-    console.log(e);
-  }
-}
-
-function playLastRecording(){
-  if(lastUserAudio){
-    lastUserAudio.currentTime=0;
-    lastUserAudio.play();
-  }else{
-    toast('No recording available yet.');
-  }
-}
-
-function resetConversation(){
-  if(!confirm('Reset current conversation?')) return;
-
-  document.getElementById('simMsgs').innerHTML='';
-  document.getElementById('coachFeed').innerHTML='<div class="c-item tip"><div class="c-lbl tip">Tip</div><ul class="c-bullets"><li class="c-bullet"><span>Conversation reset. Start again and improve your score.</span></li></ul></div>';
-
-  sim.msgs=[];
-  sim.exch=0;
-  sim.grades=[];
-  sim.coachLog=[];
-  document.getElementById('simExch').textContent='0';
-  document.getElementById('simAvgGrade').textContent='—';
-
-  toast('Conversation reset.');
-}
-
-function redoLastResponse(){
-  if(!lastUserResponse){
-    toast('No previous response to retry.');
-    return;
-  }
-
-  document.getElementById('simInput').value=lastUserResponse;
-  toast('Previous response restored. Try improving it for a higher score.');
-}
-
 function downloadSession(format){
   const msgs=sim.msgs||[];
   const coach=sim.coachLog||[];
